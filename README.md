@@ -1,0 +1,2 @@
+# lingorm
+orm for go
