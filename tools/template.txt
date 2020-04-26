@@ -1,0 +1,24 @@
+package {{package}}
+
+import (
+	"github.com/xiaolingzi/lingorm/model"
+	"time"
+)
+
+//{{upper_camel_entity_name}}Entity entity
+type {{upper_camel_entity_name}}Entity struct {
+<<<    {{upper_camel_field_name}} {{field_type}} `{{column_property}}`>>>
+}
+
+//{{upper_camel_entity_name}}Table table
+type {{upper_camel_entity_name}}Table struct {
+    TTDatabaseName      string
+    TTTableName         string
+    TTAlias             string
+<<<    {{upper_camel_field_name}} model.Field>>>
+}
+
+//Table return table
+func (e {{upper_camel_entity_name}}Entity) Table() {{upper_camel_entity_name}}Table {
+	return model.Table({{upper_camel_entity_name}}Table{}, {{upper_camel_entity_name}}Entity{}, "{{table_name}}", "{{database_name}}").({{upper_camel_entity_name}}Table)
+}
