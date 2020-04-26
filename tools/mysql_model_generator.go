@@ -116,7 +116,7 @@ func generateEntity(db string, tb string) {
 			}
 
 			columnProperty := `json:"` + lowerFieldName + `"`
-			columnProperty += ` comlumn:"` + columnName + `"`
+			columnProperty += ` column:"` + columnName + `"`
 			// columnProperty += ` type:"` + column["DATA_TYPE"] + `"`
 			if column["COLUMN_KEY"] == "PRI" {
 				columnProperty += ` primary_key:"true"`
