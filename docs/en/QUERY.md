@@ -38,7 +38,7 @@ NIN | Not in.
 
 ## Simple Query
 
-1) Use the 'Table' function
+Use the 'Table' function
 
 ``` go
 db := lingorm.DB("testdb1")
@@ -56,7 +56,7 @@ FindPage(pageIndex int, pageSize int) (common.PageResult, error) // return page 
 FindCount() (int, error) // return the number of rows
 ```
 
-2）直接查询
+Other functions
 
 ``` go
 db := lingorm.DB("testdb1")
