@@ -43,16 +43,21 @@ Use the 'Table' function
 ``` go
 db := lingorm.DB("testdb1")
 table := company.CompanyEntity{}.Table()
-result, err := db.Table(table).Select(table.ID, table.CompanyName).Where(table.IsDeleted.EQ(0), table.ID.GE(5)).OrderBy(table.ID.DESC()).Find()
+
+var result []company.CompanyEntity
+_, err := db.Table(table).Select(table.ID, table.CompanyName).Where(table.IsDeleted.EQ(0), table.ID.GE(5)).OrderBy(table.ID.DESC()).Find(&result)
+
+// or
+//result, err := db.Table(table).Select(table.ID, table.CompanyName).Where(table.IsDeleted.EQ(0), table.ID.GE(5)).OrderBy(table.ID.DESC()).Find()
 ```
 
 This 'Where' method can accept the instance created by 'CreateWhere' as argument.
 In addition to the 'Find' method. All the available functions are as follows:
 
 ```go
-First() (interface{}, error) // return the first row
-Find() (interface{}, error) // return all rows
-FindPage(pageIndex int, pageSize int) (common.PageResult, error) // return page result
+First(structPtr ...interface{}) (interface{}, error) // return the first row
+Find(slicePtr ...interface{}) (interface{}, error) // return all rows
+FindPage(pageIndex int, pageSize int, slicePtr ...interface{}) (common.PageResult, error) // return page result
 FindCount() (int, error) // return the number of rows
 ```
 
@@ -63,19 +68,20 @@ db := lingorm.DB("testdb1")
 table := company.CompanyEntity{}.Table()
 where := db.CreateWhere().And(table.IsDeleted.EQ(0), table.ID.GE(5))
 orderBy := db.CreateOderBy().By(table.ID.DESC(), table.CreatedAt.ASC)
-result, err := db.Find(table, where, orderBy)
+var result []company.CompanyEntity
+_, err := db.Find(table, where, orderBy, &result)
+// or
+// result, err := db.Find(table, where, orderBy)
 ```
 
 Other functions available:
 
 ```go
-Find(table interface{}, args ...interface{}) (interface{}, error)
-FindTop(table interface{}, top int, args ...interface{}) (interface{}, error)
-First(table interface{}, args ...interface{}) (interface{}, error)
-FindPage(table interface{}, pageIndex int, pageSize int, args ...interface{}) (common.PageResult, error)
+Find(table interface{}, where interface{}, orderBy interface{}, slicePtr ...interface{}) (interface{}, error)
+FindTop(table interface{}, top int, where interface{}, orderBy interface{}, slicePtr ...interface{}) (interface{}, error)
+First(table interface{}, where interface{}, orderBy interface{}, structPtr ...interface{}) (interface{}, error)
+FindPage(table interface{}, where interface{}, orderBy interface{}, pageIndex int, pageSize int, slicePtr ...interface{}) (common.PageResult, error)
 ```
-
-'where' and 'order by' instances are supported for args
 
 ## Query Builder
 
@@ -104,7 +110,8 @@ type DepartmentResult struct {
     Num         int    `column:"num"`
 }
 
-result, err := builder.Find(DepartmentResult{})
+var result []DepartmentResult
+_, err := builder.Find(&result)
 ```
 
 Also, the where object created by 'CreateWhere' can be used as the 'Where' function's argument.

@@ -43,16 +43,20 @@ NIN 对应sql中的not in
 ``` go
 db := lingorm.DB("testdb1")
 table := company.CompanyEntity{}.Table()
-result, err := db.Table(table).Select(table.ID, table.CompanyName).Where(table.IsDeleted.EQ(0), table.ID.GE(5)).OrderBy(table.ID.DESC()).Find()
+var result []company.CompanyEntity
+_, err := db.Table(table).Select(table.ID, table.CompanyName).Where(table.IsDeleted.EQ(0), table.ID.GE(5)).OrderBy(table.ID.DESC()).Find(&result)
+
+// 或者
+//result, err := db.Table(table).Select(table.ID, table.CompanyName).Where(table.IsDeleted.EQ(0), table.ID.GE(5)).OrderBy(table.ID.DESC()).Find()
 ```
 
-其中Where方法可以还可以接收CreateWhere创建的where对象以支持复杂的查询条件。Find方法返回的是一个列表，已经映射到模型中，可以进行类型转换，比如result.([]company.CompanyEntity)。
+其中Where方法可以还可以接收CreateWhere创建的where对象以支持复杂的查询条件。Find方法返回的是一个列表，已经映射到模型中，可以进行类型转换，或者直接将结果变量指针传给Find方法。
 除了Find方法之外，还有以下几个方法：
 
 ``` go
-First() (interface{}, error) // 返回符合条件的第一条数据
-Find() (interface{}, error) // 返回符合条件的数据列表
-FindPage(pageIndex int, pageSize int) (common.PageResult, error) //返回分页数据
+Find(slicePtr ...interface{}) (interface{}, error) // 返回符合条件的第一条数据
+FindPage(pageIndex int, pageSize int, slicePtr ...interface{}) (common.PageResult, error) // 返回符合条件的数据列表
+First(structPtr ...interface{}) (interface{}, error) //返回分页数据
 FindCount() (int, error) // 返回数量
 ```
 
@@ -63,19 +67,20 @@ db := lingorm.DB("testdb1")
 table := company.CompanyEntity{}.Table()
 where := db.CreateWhere().And(table.IsDeleted.EQ(0), table.ID.GE(5))
 orderBy := db.CreateOderBy().By(table.ID.DESC(), table.CreatedAt.ASC)
-result, err := db.Find(table, where, orderBy)
+var result []company.CompanyEntity
+_, err := db.Find(table, where, orderBy, &result)
+// 或者
+// result, err := db.Find(table, where, orderBy)
 ```
 
 类似的也有以下几个方法
 
 ``` go
-Find(table interface{}, args ...interface{}) (interface{}, error)
-FindTop(table interface{}, top int, args ...interface{}) (interface{}, error)
-First(table interface{}, args ...interface{}) (interface{}, error)
-FindPage(table interface{}, pageIndex int, pageSize int, args ...interface{}) (common.PageResult, error)
+Find(table interface{}, where interface{}, orderBy interface{}, slicePtr ...interface{}) (interface{}, error)
+FindTop(table interface{}, top int, where interface{}, orderBy interface{}, slicePtr ...interface{}) (interface{}, error)
+First(table interface{}, where interface{}, orderBy interface{}, structPtr ...interface{}) (interface{}, error)
+FindPage(table interface{}, where interface{}, orderBy interface{}, pageIndex int, pageSize int, slicePtr ...interface{}) (common.PageResult, error)
 ```
-
-其中args支持where对象和order by的对象。
 
 ## 复杂查询
 
@@ -104,7 +109,8 @@ type DepartmentResult struct {
     Num         int    `column:"num"`
 }
 
-result, err := builder.Find(DepartmentResult{})
+var result []DepartmentResult
+_, err := builder.Find(&result)
 ```
 
 同样，Where方法也支持通过CreateWhere创建的where对象，以支持复杂的查询条件。

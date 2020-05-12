@@ -8,7 +8,7 @@ import (
 type IQuery interface {
 	Table(table interface{}) ITableQuery
 	Find(table interface{}, where interface{}, orderBy interface{}, slicePtr ...interface{}) (interface{}, error)
-	FindTop(table interface{}, where interface{}, orderBy interface{}, top int, slicePtr ...interface{}) (interface{}, error)
+	FindTop(table interface{}, top int, where interface{}, orderBy interface{}, slicePtr ...interface{}) (interface{}, error)
 	First(table interface{}, where interface{}, orderBy interface{}, structPtr ...interface{}) (interface{}, error)
 	FindPage(table interface{}, where interface{}, orderBy interface{}, pageIndex int, pageSize int, slicePtr ...interface{}) (common.PageResult, error)
 	Insert(model interface{}) (int, error)
@@ -70,7 +70,7 @@ type INativeQuery interface {
 	Find(sql string, params map[string]interface{}, slicePtr ...interface{}) (interface{}, error)
 	FindPage(pageIndex int, pageSize int, sql string, params map[string]interface{}, slicePtr ...interface{}) (common.PageResult, error)
 	FindCount(sql string, params map[string]interface{}) (int, error)
-	First(sql string, params map[string]interface{}, slicePtr ...interface{}) (interface{}, error)
+	First(sql string, params map[string]interface{}, structPtr ...interface{}) (interface{}, error)
 }
 
 // IWhere the interface of Where

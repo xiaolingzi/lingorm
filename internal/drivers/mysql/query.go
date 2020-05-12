@@ -45,7 +45,7 @@ func (q *Query) Find(table interface{}, where interface{}, orderBy interface{}, 
 }
 
 // FindTop return the top rows that meet query criteria
-func (q *Query) FindTop(table interface{}, where interface{}, orderBy interface{}, top int, slicePtr ...interface{}) (interface{}, error) {
+func (q *Query) FindTop(table interface{}, top int, where interface{}, orderBy interface{}, slicePtr ...interface{}) (interface{}, error) {
 	sql, params := q.getSelectSQL(table, where, orderBy)
 	if top > 0 {
 		sql += " LIMIT " + strconv.Itoa(top)
@@ -61,7 +61,7 @@ func (q *Query) FindTop(table interface{}, where interface{}, orderBy interface{
 
 // First return the first row that meet query criteria
 func (q Query) First(table interface{}, where interface{}, orderBy interface{}, structPtr ...interface{}) (interface{}, error) {
-	result, err := q.FindTop(table, where, orderBy, 1, structPtr...)
+	result, err := q.FindTop(table, 1, where, orderBy, structPtr...)
 	if err != nil && result != nil {
 		return result.([]interface{})[0], nil
 	}

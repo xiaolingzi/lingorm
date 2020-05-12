@@ -8,7 +8,11 @@ native := db.NativeQuery()
 sql := "select * from company where id =:id"
 params := make(map[string]interface{})
 params["id"] = 1
-result, err := native.Find(sql, params)
+var result []company.CompanyEntity
+_, err := native.Find(sql, params, &result)
+
+// 或者
+// result, err := native.Find(sql, params)
 ```
 
 如果需要将结果映射到结构体，就如下：
@@ -23,8 +27,8 @@ result, err := native.Find(sql, params, company.CompanyEntity{})
 
 ```go
 Execute(sql string, params map[string]interface{}) (int, int, error) // 执行增、删、改时使用，分别返回影响条数、最后ID和错误
-Find(sql string, params map[string]interface{}, entity ...interface{}) (interface{}, error) // 查询列表时使用
-FindPage(pageIndex int, pageSize int, sql string, params map[string]interface{}, entity ...interface{}) (common.PageResult, error) // 查询分页数据时使用
+Find(sql string, params map[string]interface{}, slicePtr ...interface{}) (interface{}, error) // 查询列表时使用
+FindPage(pageIndex int, pageSize int, sql string, params map[string]interface{}, slicePtr ...interface{}) (common.PageResult, error) // 查询分页数据时使用
 FindCount(sql string, params map[string]interface{}) (int, error) // 查询数量时使用
-First(sql string, params map[string]interface{}, entity ...interface{}) (interface{}, error) // 返回符合条件的第一条
+First(sql string, params map[string]interface{}, structPtr ...interface{}) (interface{}, error) // 返回符合条件的第一条
 ```
