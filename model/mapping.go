@@ -31,19 +31,51 @@ func NewMapping() *Mapping {
 	return &p
 }
 
-// DocParser doc parser
-func (p *Mapping) DocParser(mapResult map[string]string, modelInstance interface{}) (interface{}, error) {
+// GetMappingData get mappings data
+func (p *Mapping) GetMappingData(data []map[string]string, resultObj interface{}) []interface{} {
+	length := len(data)
+	v := reflect.ValueOf(resultObj)
+	if v.Kind() == reflect.Ptr {
+		v = reflect.Indirect(v)
+	}
+	modelType := v.Type()
+	if v.Kind() == reflect.Slice {
+		modelType = v.Type().Elem()
+	}
+
+	var result []interface{}
+	for i := 0; i < length; i++ {
+		tempResult, _ := p.docParser(data[i], modelType)
+		result = append(result, tempResult)
+	}
+
+	if v.CanSet() {
+		if v.Kind() == reflect.Slice {
+			modelType = v.Type().Elem()
+			newv := reflect.MakeSlice(v.Type(), 0, length)
+			v.Set(newv)
+			v.SetLen(length)
+			for i := 0; i < length; i++ {
+				v.Index(i).Set(reflect.ValueOf(result[i]))
+			}
+		} else if v.Kind() == reflect.Struct {
+			v.Set(reflect.ValueOf(result[0]))
+		}
+	}
+	return result
+}
+
+// docParser doc parser
+func (p *Mapping) docParser(mapResult map[string]string, modelType reflect.Type) (interface{}, error) {
+	refType := modelType
 	var err error = nil
-	refValue := reflect.ValueOf(modelInstance)
-	modelType := refValue.Type()
-	result := reflect.New(modelType).Elem()
+	result := reflect.New(refType).Elem()
 
 	if len(mapResult) == 0 {
 		return result.Interface(), err
 	}
 
-	refType := reflect.TypeOf(modelInstance)
-	mappings, err := p.getFieldMappings(refType, refValue)
+	mappings, err := p.getFieldMappings(refType, result)
 	if err != nil {
 		return result.Interface(), err
 	}
@@ -55,15 +87,15 @@ func (p *Mapping) DocParser(mapResult map[string]string, modelInstance interface
 			tempValue := convertStringToType(mapResult[columnName], refType.Field(i).Type)
 			refTargetValue := reflect.ValueOf(tempValue)
 			if refTargetValue.IsValid() {
-				if refTargetValue.Type().ConvertibleTo(refValue.Field(i).Type()) {
-					result.Field(i).Set(refTargetValue.Convert(refValue.Field(i).Type()))
+				if refTargetValue.Type().ConvertibleTo(result.Field(i).Type()) {
+					result.Field(i).Set(refTargetValue.Convert(result.Field(i).Type()))
 					continue
 				} else {
-					err = fmt.Errorf("Could not convert argument of field %s from %s to %s", refType.Field(i).Name, refTargetValue.Type(), refValue.Field(i).Type())
+					err = fmt.Errorf("Could not convert argument of field %s from %s to %s", refType.Field(i).Name, refTargetValue.Type(), result.Field(i).Type())
 				}
 			}
 		}
-		result.Field(i).Set(reflect.Zero(refValue.Field(i).Type()))
+		result.Field(i).Set(reflect.Zero(result.Field(i).Type()))
 	}
 	return result.Interface(), err
 }

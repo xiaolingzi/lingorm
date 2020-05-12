@@ -32,27 +32,36 @@ func (q *Query) Table(table interface{}) drivers.ITableQuery {
 }
 
 // Find return all the rows that meet query criteria
-func (q *Query) Find(table interface{}, args ...interface{}) (interface{}, error) {
-	sql, params := q.getSelectSQL(table, args...)
-	modelType := model.NewMapping().GetModelType(table)
-	model := reflect.New(modelType).Elem().Interface()
-	return NewNativeQuery(q.DatabaseConfigKey, q.TransactionKey).Find(sql, params, model)
+func (q *Query) Find(table interface{}, where interface{}, orderBy interface{}, slicePtr ...interface{}) (interface{}, error) {
+	sql, params := q.getSelectSQL(table, where, orderBy)
+	if len(slicePtr) > 0 {
+		return NewNativeQuery(q.DatabaseConfigKey, q.TransactionKey).Find(sql, params, slicePtr...)
+	} else {
+		modelType := model.NewMapping().GetModelType(table)
+		model := reflect.New(modelType).Elem().Interface()
+		return NewNativeQuery(q.DatabaseConfigKey, q.TransactionKey).Find(sql, params, model)
+	}
+
 }
 
 // FindTop return the top rows that meet query criteria
-func (q *Query) FindTop(table interface{}, top int, args ...interface{}) (interface{}, error) {
-	sql, params := q.getSelectSQL(table, args...)
+func (q *Query) FindTop(table interface{}, where interface{}, orderBy interface{}, top int, slicePtr ...interface{}) (interface{}, error) {
+	sql, params := q.getSelectSQL(table, where, orderBy)
 	if top > 0 {
 		sql += " LIMIT " + strconv.Itoa(top)
 	}
-	modelType := model.NewMapping().GetModelType(table)
-	model := reflect.New(modelType).Elem().Interface()
-	return NewNativeQuery(q.DatabaseConfigKey, q.TransactionKey).Find(sql, params, model)
+	if len(slicePtr) > 0 {
+		return NewNativeQuery(q.DatabaseConfigKey, q.TransactionKey).Find(sql, params, slicePtr...)
+	} else {
+		modelType := model.NewMapping().GetModelType(table)
+		model := reflect.New(modelType).Elem().Interface()
+		return NewNativeQuery(q.DatabaseConfigKey, q.TransactionKey).Find(sql, params, model)
+	}
 }
 
 // First return the first row that meet query criteria
-func (q Query) First(table interface{}, args ...interface{}) (interface{}, error) {
-	result, err := q.FindTop(table, 1, args...)
+func (q Query) First(table interface{}, where interface{}, orderBy interface{}, structPtr ...interface{}) (interface{}, error) {
+	result, err := q.FindTop(table, where, orderBy, 1, structPtr...)
 	if err != nil && result != nil {
 		return result.([]interface{})[0], nil
 	}
@@ -60,11 +69,15 @@ func (q Query) First(table interface{}, args ...interface{}) (interface{}, error
 }
 
 // FindPage return the page result
-func (q *Query) FindPage(table interface{}, pageIndex int, pageSize int, args ...interface{}) (common.PageResult, error) {
-	sql, params := q.getSelectSQL(table, args...)
-	modelType := model.NewMapping().GetModelType(table)
-	model := reflect.New(modelType).Elem().Interface()
-	return NewNativeQuery(q.DatabaseConfigKey, q.TransactionKey).FindPage(pageIndex, pageSize, sql, params, model)
+func (q *Query) FindPage(table interface{}, where interface{}, orderBy interface{}, pageIndex int, pageSize int, slicePtr ...interface{}) (common.PageResult, error) {
+	sql, params := q.getSelectSQL(table, where, orderBy)
+	if len(slicePtr) > 0 {
+		return NewNativeQuery(q.DatabaseConfigKey, q.TransactionKey).FindPage(pageIndex, pageSize, sql, params, slicePtr...)
+	} else {
+		modelType := model.NewMapping().GetModelType(table)
+		model := reflect.New(modelType).Elem().Interface()
+		return NewNativeQuery(q.DatabaseConfigKey, q.TransactionKey).FindPage(pageIndex, pageSize, sql, params, model)
+	}
 }
 
 // Insert insert data
@@ -353,16 +366,18 @@ func (q *Query) getSelectSQL(table interface{}, args ...interface{}) (string, ma
 		return sql, params
 	}
 	whereSQL := ""
-	// groupSQL := ""
 	orderSQL := ""
 	for _, arg := range args {
-		argType := reflect.TypeOf(args).String()
-		if argType == "mysql.Where" {
-			where := arg.(Where)
+		if arg == nil {
+			continue
+		}
+		argType := reflect.TypeOf(arg).String()
+		if argType == "*mysql.Where" {
+			where := arg.(*Where)
 			whereSQL = where.SQL
 			params = where.Params
-		} else if argType == "msyql.OrderBy" {
-			order := arg.(OrderBy)
+		} else if argType == "*mysql.OrderBy" {
+			order := arg.(*OrderBy)
 			orderSQL += "," + order.SQL
 		}
 	}
@@ -373,5 +388,6 @@ func (q *Query) getSelectSQL(table interface{}, args ...interface{}) (string, ma
 		orderSQL = strings.Trim(orderSQL, ",")
 		sql += " ORDER BY " + orderSQL
 	}
+
 	return sql, params
 }

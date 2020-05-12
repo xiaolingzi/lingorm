@@ -74,21 +74,30 @@ func (s *TableQuery) Limit(count int) drivers.ITableQuery {
 }
 
 // Find return all the rows that meet query criteria
-func (s *TableQuery) Find() (interface{}, error) {
+func (s *TableQuery) Find(slicePtr ...interface{}) (interface{}, error) {
 	sql := s.getSelectSQL()
+	if len(slicePtr) > 0 {
+		return NewNativeQuery(s.DatabaseConfigKey, s.TransactionKey).Find(sql, s.Params, slicePtr...)
+	}
 	return NewNativeQuery(s.DatabaseConfigKey, s.TransactionKey).Find(sql, s.Params, s.Model)
 }
 
 // FindPage return the page result
-func (s *TableQuery) FindPage(pageIndex int, pageSize int) (common.PageResult, error) {
+func (s *TableQuery) FindPage(pageIndex int, pageSize int, slicePtr ...interface{}) (common.PageResult, error) {
 	sql := s.getSelectSQL()
+	if len(slicePtr) > 0 {
+		return NewNativeQuery(s.DatabaseConfigKey, s.TransactionKey).FindPage(pageIndex, pageSize, sql, s.Params, slicePtr...)
+	}
 	return NewNativeQuery(s.DatabaseConfigKey, s.TransactionKey).FindPage(pageIndex, pageSize, sql, s.Params, s.Model)
 }
 
 // First return the first row that meet query criteria
-func (s *TableQuery) First() (interface{}, error) {
+func (s *TableQuery) First(structPtr ...interface{}) (interface{}, error) {
 	s.LimitCount = 0
 	sql := s.getSelectSQL()
+	if len(structPtr) > 0 {
+		return NewNativeQuery(s.DatabaseConfigKey, s.TransactionKey).First(sql, s.Params, structPtr...)
+	}
 	return NewNativeQuery(s.DatabaseConfigKey, s.TransactionKey).First(sql, s.Params, s.Model)
 }
 

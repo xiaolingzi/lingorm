@@ -7,10 +7,10 @@ import (
 // IQuery the interface of Query
 type IQuery interface {
 	Table(table interface{}) ITableQuery
-	Find(table interface{}, args ...interface{}) (interface{}, error)
-	FindTop(table interface{}, top int, args ...interface{}) (interface{}, error)
-	First(table interface{}, args ...interface{}) (interface{}, error)
-	FindPage(table interface{}, pageIndex int, pageSize int, args ...interface{}) (common.PageResult, error)
+	Find(table interface{}, where interface{}, orderBy interface{}, slicePtr ...interface{}) (interface{}, error)
+	FindTop(table interface{}, where interface{}, orderBy interface{}, top int, slicePtr ...interface{}) (interface{}, error)
+	First(table interface{}, where interface{}, orderBy interface{}, structPtr ...interface{}) (interface{}, error)
+	FindPage(table interface{}, where interface{}, orderBy interface{}, pageIndex int, pageSize int, slicePtr ...interface{}) (common.PageResult, error)
 	Insert(model interface{}) (int, error)
 	BatchInsert(modelList []interface{}) (int, error)
 	Update(model interface{}) (int, error)
@@ -41,9 +41,9 @@ type IQueryBuilder interface {
 	GroupBy(args ...interface{}) IQueryBuilder
 	OrderBy(args ...interface{}) IQueryBuilder
 	Limit(count int) IQueryBuilder
-	Find(args ...interface{}) (interface{}, error)
-	First(rgs ...interface{}) (interface{}, error)
-	FindPage(pageIndex int, pageSize int, args ...interface{}) (common.PageResult, error)
+	Find(slicePtr ...interface{}) (interface{}, error)
+	First(structPtr ...interface{}) (interface{}, error)
+	FindPage(pageIndex int, pageSize int, slicePtr ...interface{}) (common.PageResult, error)
 	FindCount() (int, error)
 
 	CurrentSQL() string
@@ -57,21 +57,20 @@ type ITableQuery interface {
 	OrderBy(args ...interface{}) ITableQuery
 	GroupBy(args ...interface{}) ITableQuery
 	Limit(count int) ITableQuery
-	Find() (interface{}, error)
-	FindPage(pageIndex int, pageSize int) (common.PageResult, error)
-	First() (interface{}, error)
+	Find(slicePtr ...interface{}) (interface{}, error)
+	FindPage(pageIndex int, pageSize int, slicePtr ...interface{}) (common.PageResult, error)
+	First(structPtr ...interface{}) (interface{}, error)
 	FindCount() (int, error)
-
 	CurrentSQL() string
 }
 
 // INativeQuery the interface of NativeQuery
 type INativeQuery interface {
 	Execute(sql string, params map[string]interface{}) (int, int, error)
-	Find(sql string, params map[string]interface{}, entity ...interface{}) (interface{}, error)
-	FindPage(pageIndex int, pageSize int, sql string, params map[string]interface{}, entity ...interface{}) (common.PageResult, error)
+	Find(sql string, params map[string]interface{}, slicePtr ...interface{}) (interface{}, error)
+	FindPage(pageIndex int, pageSize int, sql string, params map[string]interface{}, slicePtr ...interface{}) (common.PageResult, error)
 	FindCount(sql string, params map[string]interface{}) (int, error)
-	First(sql string, params map[string]interface{}, entity ...interface{}) (interface{}, error)
+	First(sql string, params map[string]interface{}, slicePtr ...interface{}) (interface{}, error)
 }
 
 // IWhere the interface of Where

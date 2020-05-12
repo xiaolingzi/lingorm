@@ -109,22 +109,22 @@ func (b *QueryBuilder) Limit(count int) drivers.IQueryBuilder {
 }
 
 // Find return all the rows that meet query criteria
-func (b *QueryBuilder) Find(args ...interface{}) (interface{}, error) {
+func (b *QueryBuilder) Find(slicePtr ...interface{}) (interface{}, error) {
 	sql := b.getSelectSQL()
-	return NewNativeQuery(b.DatabaseConfigKey, b.TransactionKey).Find(sql, b.Params, args...)
+	return NewNativeQuery(b.DatabaseConfigKey, b.TransactionKey).Find(sql, b.Params, slicePtr...)
 }
 
 // First return the first row that meet query criteria
-func (b *QueryBuilder) First(args ...interface{}) (interface{}, error) {
+func (b *QueryBuilder) First(structPtr ...interface{}) (interface{}, error) {
 	b.LimitCount = 0
 	sql := b.getSelectSQL()
-	return NewNativeQuery(b.DatabaseConfigKey, b.TransactionKey).First(sql, b.Params, args...)
+	return NewNativeQuery(b.DatabaseConfigKey, b.TransactionKey).First(sql, b.Params, structPtr...)
 }
 
 // FindPage return the page result
-func (b *QueryBuilder) FindPage(pageIndex int, pageSize int, args ...interface{}) (common.PageResult, error) {
+func (b *QueryBuilder) FindPage(pageIndex int, pageSize int, slicePtr ...interface{}) (common.PageResult, error) {
 	sql := b.getSelectSQL()
-	return NewNativeQuery(b.DatabaseConfigKey, b.TransactionKey).FindPage(pageIndex, pageSize, sql, b.Params, args...)
+	return NewNativeQuery(b.DatabaseConfigKey, b.TransactionKey).FindPage(pageIndex, pageSize, sql, b.Params, slicePtr...)
 }
 
 // FindCount return the number of rows that meet query criteria
