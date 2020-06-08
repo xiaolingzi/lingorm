@@ -69,7 +69,10 @@ func (q *NativeQuery) FindCount(sql string, params map[string]interface{}) (coun
 func (q *NativeQuery) First(sql string, params map[string]interface{}, structPtr ...interface{}) (interface{}, error) {
 	sql = sql + " LIMIT 1"
 	list := q.getData(sql, params, structPtr...)
-	return list.([]interface{})[0], nil
+	if list != nil {
+		return list.([]interface{})[0], nil
+	}
+	return nil, nil
 }
 
 func (q *NativeQuery) getData(sql string, params map[string]interface{}, resultObj ...interface{}) interface{} {
