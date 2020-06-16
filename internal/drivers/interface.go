@@ -79,6 +79,8 @@ type IWhere interface {
 	GetOr(args ...interface{}) string
 	And(args ...interface{}) IWhere
 	GetAnd(args ...interface{}) string
+	AndOr(args ...interface{}) IWhere
+	OrAnd(args ...interface{}) IWhere
 	CurrentSQL() string
 }
 

@@ -78,6 +78,34 @@ func (p *Where) GetOr(args ...interface{}) string {
 	return sql
 }
 
+// AndOr and ( xx or xx)
+func (p *Where) AndOr(args ...interface{}) drivers.IWhere {
+	if len(args) == 0 {
+		return p
+	}
+	sql, params := getExpression(2, args, p.Params)
+	var args2 []interface{}
+	args2 = append(args2, p.SQL)
+	args2 = append(args2, sql)
+	p.SQL, params = getExpression(1, args2, params)
+	p.Params = params
+	return p
+}
+
+// OrAnd or ( xx and xx)
+func (p *Where) OrAnd(args ...interface{}) drivers.IWhere {
+	if len(args) == 0 {
+		return p
+	}
+	sql, params := getExpression(1, args, p.Params)
+	var args2 []interface{}
+	args2 = append(args2, p.SQL)
+	args2 = append(args2, sql)
+	p.SQL, params = getExpression(2, args2, params)
+	p.Params = params
+	return p
+}
+
 // CurrentSQL return the current where sql
 func (p *Where) CurrentSQL() string {
 	return p.SQL
@@ -188,6 +216,9 @@ func getCondition(condition common.Condition, params map[string]interface{}) (st
 				}
 			}
 			inStr = strings.Trim(inStr, ",")
+			if inStr == "" {
+				common.NewError().Throw("Parameter cannot be empty for the IN function of where clause")
+			}
 			sql = fieldName + " " + operator + "(" + inStr + ")"
 		} else if condition.Operator == common.OperatorFindInSet {
 			key := getParamKey()
