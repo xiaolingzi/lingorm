@@ -50,7 +50,9 @@ func (m *Native) Execute(query string, params map[string]interface{}, transactio
 
 	var stmt *sql.Stmt
 	defer func() {
-		stmt.Close()
+		if stmt != nil {
+			stmt.Close()
+		}
 	}()
 	var res sql.Result
 	var err error
@@ -99,8 +101,12 @@ func (m *Native) FetchAll(query string, params map[string]interface{}, transacti
 	var stmt *sql.Stmt
 	var rows *sql.Rows
 	defer func() {
-		stmt.Close()
-		rows.Close()
+		if stmt != nil {
+			stmt.Close()
+		}
+		if rows != nil {
+			rows.Close()
+		}
 	}()
 
 	var err error

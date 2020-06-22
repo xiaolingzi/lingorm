@@ -162,10 +162,6 @@ func getExpression(whereType int, args []interface{}, params map[string]interfac
 		}
 	}
 
-	// if len(sql) > 2 && sql[0] == '(' && sql[len(sql)-1] == ')' {
-	// 	sql = sql[1 : len(sql)-2]
-	// }
-
 	return sql, params
 }
 
@@ -216,9 +212,9 @@ func getCondition(condition common.Condition, params map[string]interface{}) (st
 				}
 			}
 			inStr = strings.Trim(inStr, ",")
-			if inStr == "" {
-				common.NewError().Throw("Parameter cannot be empty for the IN function of where clause")
-			}
+			// if inStr == "" {
+			// 	common.NewError().Throw("Parameter cannot be empty for the IN function of where clause")
+			// }
 			sql = fieldName + " " + operator + "(" + inStr + ")"
 		} else if condition.Operator == common.OperatorFindInSet {
 			key := getParamKey()
