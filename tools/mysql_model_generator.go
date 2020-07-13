@@ -7,18 +7,20 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path"
 	"regexp"
 	"strings"
 
 	"github.com/xiaolingzi/lingorm"
-	"github.com/xiaolingzi/lingorm/configs"
 )
 
 var query lingorm.INativeQuery
 var database, table string
 
 func main() {
-	configs.SetEnvConfigs()
+	// configs.SetEnvConfigs()
+	dir, _ := os.Getwd()
+	os.Setenv("LINGORM_CONFIG", path.Join(dir, "/tools/database.json"))
 
 	flag.StringVar(&database, "d", "", "database")
 	flag.StringVar(&table, "t", "", "table name")

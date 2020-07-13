@@ -37,6 +37,8 @@ func (order *OrderBy) By(args ...interface{}) drivers.IOrderBy {
 		} else if valueType == "model.Field" {
 			tempValue := arg.(model.Field)
 			order.SQL += "," + tempValue.AliasTableName + "." + tempValue.ColumnName + " " + orderList[tempValue.OrderBy]
+		} else if valueType == "*mysql.OrderBy" {
+			order.SQL += "," + arg.(*OrderBy).SQL
 		}
 	}
 	order.SQL = strings.Trim(order.SQL, ",")

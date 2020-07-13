@@ -11,10 +11,11 @@ type IQuery interface {
 	FindTop(table interface{}, top int, where interface{}, orderBy interface{}, slicePtr ...interface{}) (interface{}, error)
 	First(table interface{}, where interface{}, orderBy interface{}, structPtr ...interface{}) (interface{}, error)
 	FindPage(table interface{}, where interface{}, orderBy interface{}, pageIndex int, pageSize int, slicePtr ...interface{}) (common.PageResult, error)
+	FindCount(table interface{}, where interface{}) (int, error)
 	Insert(model interface{}) (int, error)
-	BatchInsert(modelList []interface{}) (int, error)
+	BatchInsert(modelList interface{}) (int, error)
 	Update(model interface{}) (int, error)
-	BatchUpdate(modelList []interface{}) (int, error)
+	BatchUpdate(modelList interface{}) (int, error)
 	UpdateBy(table interface{}, params []interface{}, where IWhere) (int, error)
 	Delete(model interface{}) (int, error)
 	DeleteBy(table interface{}, where IWhere) (int, error)
@@ -22,7 +23,7 @@ type IQuery interface {
 	QueryBuilder() IQueryBuilder
 	NativeQuery() INativeQuery
 	CreateWhere() IWhere
-	CreateOderBy() IOrderBy
+	CreateOrderBy() IOrderBy
 	CreateGroupBy() IGroupBy
 
 	Begin() error

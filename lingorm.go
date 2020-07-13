@@ -44,7 +44,7 @@ type IOrderBy interface {
 }
 
 // DB the instance of Query
-func DB(databaseConfigKey string) drivers.IQuery {
+func DB(databaseConfigKey string) IQuery {
 	driver := strings.ToLower(config.GetDatabaseDriver(databaseConfigKey))
 	if driver == "msyql" {
 		return mysql.NewQuery(databaseConfigKey)

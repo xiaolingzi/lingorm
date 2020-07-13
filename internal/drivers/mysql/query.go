@@ -9,6 +9,7 @@ import (
 
 	"github.com/xiaolingzi/lingorm/internal/common"
 	"github.com/xiaolingzi/lingorm/internal/drivers"
+	"github.com/xiaolingzi/lingorm/internal/utils/typehelper"
 	"github.com/xiaolingzi/lingorm/model"
 )
 
@@ -61,11 +62,14 @@ func (q *Query) FindTop(table interface{}, top int, where interface{}, orderBy i
 
 // First return the first row that meet query criteria
 func (q Query) First(table interface{}, where interface{}, orderBy interface{}, structPtr ...interface{}) (interface{}, error) {
-	result, err := q.FindTop(table, 1, where, orderBy, structPtr...)
-	if err != nil && result != nil {
-		return result.([]interface{})[0], nil
-	}
-	return nil, err
+	sql, params := q.getSelectSQL(table, where, orderBy)
+	return NewNativeQuery(q.DatabaseConfigKey, q.TransactionKey).First(sql, params, structPtr...)
+}
+
+// FindCount return the number of rows that meet query criteria
+func (q Query) FindCount(table interface{}, where interface{}) (int, error) {
+	sql, params := q.getSelectSQL(table, where)
+	return NewNativeQuery(q.DatabaseConfigKey, q.TransactionKey).FindCount(sql, params)
 }
 
 // FindPage return the page result
@@ -81,7 +85,8 @@ func (q *Query) FindPage(table interface{}, where interface{}, orderBy interface
 }
 
 // Insert insert data
-func (q *Query) Insert(modelInstance interface{}) (int, error) {
+func (q *Query) Insert(modelInstance interface{}) (id int, err error) {
+	common.NewError().Defer(&err)
 	mapData, tableName := model.NewMapping().GetModelData(modelInstance)
 	columns := ""
 	values := ""
@@ -98,12 +103,14 @@ func (q *Query) Insert(modelInstance interface{}) (int, error) {
 	columns = strings.Trim(columns, ",")
 	values = strings.Trim(values, ",")
 	sql := fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s)", tableName, columns, values)
-	_, id, err := NewNativeQuery(q.DatabaseConfigKey, q.TransactionKey).Execute(sql, params)
+	_, id, err = NewNativeQuery(q.DatabaseConfigKey, q.TransactionKey).Execute(sql, params)
 	return id, err
 }
 
 // BatchInsert batch insert data
-func (q *Query) BatchInsert(modelList []interface{}) (int, error) {
+func (q *Query) BatchInsert(modelSlice interface{}) (affected int, err error) {
+	common.NewError().Defer(&err)
+	modelList := typehelper.InterfaceToSlice(modelSlice)
 	if len(modelList) == 0 {
 		return 0, nil
 	} else if len(modelList) == 1 {
@@ -139,8 +146,8 @@ func (q *Query) BatchInsert(modelList []interface{}) (int, error) {
 	values = strings.Trim(values, ",")
 
 	sql := fmt.Sprintf("INSERT INTO %s (%s) VALUES %s", tableName, columns, values)
-	count, _, err := NewNativeQuery(q.DatabaseConfigKey, q.TransactionKey).Execute(sql, params)
-	return count, err
+	affected, _, err = NewNativeQuery(q.DatabaseConfigKey, q.TransactionKey).Execute(sql, params)
+	return affected, err
 }
 
 // Update update data
@@ -180,8 +187,9 @@ func (q *Query) Update(modelInstance interface{}) (affected int, err error) {
 }
 
 // BatchUpdate batch update data
-func (q *Query) BatchUpdate(modelList []interface{}) (affected int, err error) {
+func (q *Query) BatchUpdate(modelSlice interface{}) (affected int, err error) {
 	common.NewError().Defer(&err)
+	modelList := typehelper.InterfaceToSlice(modelSlice)
 	if len(modelList) == 0 {
 		return 0, nil
 	} else if len(modelList) == 1 {
@@ -219,6 +227,9 @@ func (q *Query) BatchUpdate(modelList []interface{}) (affected int, err error) {
 		params[tempPrimaryKey] = modelType.FieldByName(primaryField.FieldName).Interface()
 		for _, field := range mapData {
 			if field.AutoIncrement {
+				continue
+			}
+			if field.IsPrimaryKey {
 				continue
 			}
 			fieldType := reflect.TypeOf(field.Value).String()
@@ -328,8 +339,8 @@ func (q *Query) CreateWhere() drivers.IWhere {
 	return NewWhere()
 }
 
-// CreateOderBy reurn order by
-func (q *Query) CreateOderBy() drivers.IOrderBy {
+// CreateOrderBy reurn order by
+func (q *Query) CreateOrderBy() drivers.IOrderBy {
 	return NewOrderBy()
 }
 
