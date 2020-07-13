@@ -1,0 +1,11 @@
+{
+    "test": {
+        "host": "127.0.0.1",
+        "port": "3306",
+        "user": "myuser",
+        "password": "mypassword",
+        "database": "test",
+        "charset": "utf8mb4",
+        "driver": "mysql"
+    }
+}
