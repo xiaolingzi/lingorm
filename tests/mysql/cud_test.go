@@ -28,7 +28,7 @@ func TestCUD(t *testing.T) {
 
 		exists := models.FirstTableEntity{}
 		table := models.FirstTableEntity{}.Table()
-		db.Table(table).Where(table.FirstNumber.EQ(1001)).First(&exists)
+		db.Table(table).Where(table.ID.EQ(id)).First(&exists)
 		if (exists == models.FirstTableEntity{} || exists.FirstName != "go name") {
 			t.Errorf("The data is not correct")
 		}

@@ -24,9 +24,28 @@ type Field struct {
 	OrderBy     int
 }
 
+// I init
+func (f *Field) I() *Field {
+	result := Field{
+		DB:             f.DB,
+		Table:          f.Table,
+		FieldName:      f.FieldName,
+		ColumnName:     f.ColumnName,
+		ColumnType:     f.ColumnType,
+		Length:         f.Length,
+		IsPrimaryKey:   f.IsPrimaryKey,
+		AutoIncrement:  f.AutoIncrement,
+		Value:          f.Value,
+		AliasTableName: f.AliasTableName,
+	}
+	return &result
+}
+
 // F function
-func (f *Field) F(functionName string) *Field {
-	f.ColumnsFunc = append(f.ColumnsFunc, functionName)
+func (f *Field) F(funcs ...string) *Field {
+	for _, fc := range funcs {
+		f.ColumnsFunc = append(f.ColumnsFunc, fc)
+	}
 	return f
 }
 

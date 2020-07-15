@@ -85,7 +85,7 @@ func TestQueryBuilder(t *testing.T) {
 		where.OrAnd(firstTable.FirstName.EQ("first name 2"), firstTable.FirstNumber.EQ(1002))
 
 		builder := db.QueryBuilder()
-		builder = builder.Select(firstTable.FirstNumber, firstTable.FirstName.Max().Alias("first_name"), firstTable.ID.Count().Alias("num"), secondTable.SecondName.F("MAX").Alias("second_name")).
+		builder = builder.Select(firstTable.FirstNumber, firstTable.FirstName.I().Max().Alias("first_name"), firstTable.ID.I().Count().Alias("num"), secondTable.SecondName.I().F("MAX").Alias("second_name")).
 			From(firstTable).
 			RightJoin(secondTable, firstTable.FirstNumber.EQ(secondTable.SecondNumber)).
 			GroupBy(firstTable.FirstNumber).
