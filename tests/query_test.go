@@ -1,4 +1,4 @@
-package mysql
+package tests
 
 import (
 	"strconv"
@@ -9,7 +9,7 @@ import (
 	"github.com/xiaolingzi/lingorm/tests/models"
 )
 
-func TestTableQuery(t *testing.T) {
+func TestQuery(t *testing.T) {
 	db := configs.GetDB()
 	db.Begin()
 	var entityList []interface{}
@@ -28,13 +28,18 @@ func TestTableQuery(t *testing.T) {
 
 	t.Run("TestFind", func(t *testing.T) {
 		table := models.FirstTableEntity{}.Table()
-		var list []models.FirstTableEntity
-		result, err := db.Table(table).Where(table.FirstName.LIKE("go query name%")).OrderBy(table.FirstNumber.DESC()).Limit(1).Find(&list)
+		where := db.CreateWhere()
+		where.And(table.FirstName.EQ("go query name 1"), table.FirstNumber.EQ(1001))
+		where.OrAnd(table.FirstName.EQ("go query name 2"), table.FirstNumber.EQ(1002))
 
+		orderBy := db.CreateOrderBy().By(table.FirstNumber.DESC())
+
+		var list []models.FirstTableEntity
+		result, err := db.Find(table, where, orderBy, &list)
 		if err != nil {
 			t.Errorf("Find error")
 		}
-		if len(list) != 1 || list[0].FirstNumber != 1002 || result == nil {
+		if len(list) <= 0 || list[0].FirstNumber != 1002 || result == nil {
 			t.Errorf("Find result invalid")
 		}
 	})
@@ -48,7 +53,7 @@ func TestTableQuery(t *testing.T) {
 		orderBy := db.CreateOrderBy().By(table.FirstNumber.DESC())
 
 		var list []models.FirstTableEntity
-		result, err := db.Table(table).Where(where).OrderBy(orderBy).FindPage(1, 1, &list)
+		result, err := db.FindPage(table, where, orderBy, 1, 1, &list)
 		if err != nil {
 			t.Errorf("FindPage error")
 		}
@@ -57,11 +62,34 @@ func TestTableQuery(t *testing.T) {
 		}
 	})
 
+	t.Run("TestFindTop", func(t *testing.T) {
+		table := models.FirstTableEntity{}.Table()
+		where := db.CreateWhere()
+		where.And(table.FirstName.EQ("go query name 1"), table.FirstNumber.EQ(1001))
+		where.OrAnd(table.FirstName.EQ("go query name 2"), table.FirstNumber.EQ(1002))
+
+		orderBy := db.CreateOrderBy().By(table.FirstNumber.DESC())
+
+		var list []models.FirstTableEntity
+		result, err := db.FindTop(table, 1, where, orderBy, &list)
+		if err != nil {
+			t.Errorf("FindTop error")
+		}
+		if len(list) != 1 || list[0].FirstNumber != 1002 || result == nil {
+			t.Errorf("FindTop result invalid")
+		}
+	})
+
 	t.Run("TestFirst", func(t *testing.T) {
 		table := models.FirstTableEntity{}.Table()
-		var entity models.FirstTableEntity
-		result, err := db.Table(table).Where(table.FirstName.LIKE("go query name%")).OrderBy(table.FirstNumber.DESC()).First(&entity)
+		where := db.CreateWhere()
+		where.And(table.FirstName.EQ("go query name 1"), table.FirstNumber.EQ(1001))
+		where.OrAnd(table.FirstName.EQ("go query name 2"), table.FirstNumber.EQ(1002))
 
+		orderBy := db.CreateOrderBy().By(table.FirstNumber.DESC())
+
+		var entity models.FirstTableEntity
+		result, err := db.First(table, where, orderBy, &entity)
 		if err != nil {
 			t.Errorf("First error")
 		}
@@ -73,7 +101,11 @@ func TestTableQuery(t *testing.T) {
 
 	t.Run("TestFindCount", func(t *testing.T) {
 		table := models.FirstTableEntity{}.Table()
-		result, err := db.Table(table).Where(table.FirstName.LIKE("go query name%")).FindCount()
+		where := db.CreateWhere()
+		where.And(table.FirstName.EQ("go query name 1"), table.FirstNumber.EQ(1001))
+		where.OrAnd(table.FirstName.EQ("go query name 2"), table.FirstNumber.EQ(1002))
+
+		result, err := db.FindCount(table, where)
 		if err != nil {
 			t.Errorf("FindCount error")
 		}

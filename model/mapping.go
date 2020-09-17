@@ -169,7 +169,7 @@ func (p *Mapping) GetTable(table interface{}, modelInstance interface{}, tableNa
 }
 
 // GetSQLTableName return the sql table name
-func (p *Mapping) GetSQLTableName(table interface{}) (string, string) {
+func (p *Mapping) GetSQLTableName(table interface{}, withAliasName bool) (string, string) {
 	refValue := reflect.ValueOf(table)
 
 	result := ""
@@ -185,8 +185,10 @@ func (p *Mapping) GetSQLTableName(table interface{}) (string, string) {
 	}
 
 	aliasName := refValue.FieldByName("TTAlias").String()
-	if aliasName != "" {
-		result = result + " " + aliasName
+	if withAliasName {
+		if aliasName != "" {
+			result = result + " " + aliasName
+		}
 	}
 	return result, aliasName
 }

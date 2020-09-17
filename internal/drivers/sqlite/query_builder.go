@@ -1,4 +1,4 @@
-package mysql
+package sqlite
 
 import (
 	"fmt"
@@ -52,7 +52,7 @@ func (b *QueryBuilder) LeftJoin(table interface{}, whereOrConditions ...interfac
 	b.Params = b.mergeParams(b.Params, where.Params)
 
 	tableName, _ := model.NewMapping().GetSQLTableName(table, true)
-	b.JoinSQL += fmt.Sprintf(" LEFT JOIN %s ON %s", tableName, where.SQL)
+	b.JoinSQL += fmt.Sprintf(" LEFT OUTER JOIN %s ON %s", tableName, where.SQL)
 
 	return b
 }

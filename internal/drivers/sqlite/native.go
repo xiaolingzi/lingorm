@@ -1,4 +1,4 @@
-package mysql
+package sqlite
 
 import (
 	"database/sql"
@@ -9,7 +9,7 @@ import (
 
 	"github.com/xiaolingzi/lingorm/internal/common"
 
-	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 // Native struct
@@ -27,16 +27,22 @@ func NewNative(databaseConfigKey string) *Native {
 	return &m
 }
 
-func (m *Native) connect(mode string) {
-	databaseInfo := NewConfig().GetDatabaseInfo(m.DatabaseConfigKey, mode)
-	if len(databaseInfo.Port) == 0 {
-		databaseInfo.Port = "3306"
-	}
+func (m *Native) connect() {
+	databaseInfo := NewConfig().GetDatabaseInfo(m.DatabaseConfigKey)
 
-	dsn := databaseInfo.User + ":" + databaseInfo.Password + "@tcp(" + databaseInfo.Host + ":" + databaseInfo.Port + ")/" + databaseInfo.Database + "?charset=" + databaseInfo.Charset
+	dsn := "file:" + databaseInfo.File + "?cache=shared&_loc=auto"
+	if databaseInfo.User != "" && databaseInfo.Password != "" {
+		dsn += "&_auth_user=" + databaseInfo.User + "&_auth_pass=" + databaseInfo.Password
+		if databaseInfo.Crypt != "" {
+			dsn += "&_auth_crypt=" + databaseInfo.Crypt
+		}
+		if databaseInfo.Salt != "" {
+			dsn += "&_auth_salt=" + databaseInfo.Salt
+		}
+	}
 	var err error
 	if db == nil {
-		db, err = sql.Open("mysql", dsn)
+		db, err = sql.Open("sqlite3", dsn)
 		if err != nil {
 			common.NewError().Throw(err)
 		}
@@ -67,12 +73,7 @@ func (m *Native) Execute(query string, params map[string]interface{}, transactio
 			common.NewError().Throw(err)
 		}
 	} else {
-		mode := "r"
-		tempSQL := strings.TrimSpace(strings.ToLower(tempQuery))
-		if !strings.HasPrefix(tempSQL, "select") {
-			mode = "w"
-		}
-		m.connect(mode)
+		m.connect()
 		stmt, err = db.Prepare(tempQuery)
 		if err != nil {
 			common.NewError().Throw(err)
@@ -124,7 +125,7 @@ func (m *Native) FetchAll(query string, params map[string]interface{}, transacti
 			common.NewError().Throw(err)
 		}
 	} else {
-		m.connect("r")
+		m.connect()
 		stmt, err = db.Prepare(tempSQL)
 		if err != nil {
 			common.NewError().Throw(err)
@@ -141,7 +142,7 @@ func (m *Native) FetchAll(query string, params map[string]interface{}, transacti
 
 func (m *Native) Begin() string {
 	key := strconv.FormatInt(time.Now().UnixNano(), 10)
-	m.connect("w")
+	m.connect()
 	tx, err := db.Begin()
 	if err != nil {
 		common.NewError().Throw(err)

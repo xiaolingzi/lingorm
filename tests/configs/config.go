@@ -10,7 +10,7 @@ import (
 
 func GetDB() lingorm.IQuery {
 	dir, _ := os.Getwd()
-	dir, _ = filepath.Abs(filepath.Dir(dir))
+	dir, _ = filepath.Abs(dir)
 	os.Setenv("LINGORM_CONFIG", path.Join(dir, "configs/database.json"))
 	db := lingorm.DB("test")
 	return db

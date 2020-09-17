@@ -1,4 +1,4 @@
-package mysql
+package sqlite
 
 import (
 	"fmt"
@@ -263,7 +263,7 @@ func (q *Query) UpdateBy(table interface{}, setParams []interface{}, where drive
 		common.NewError().Throw("where condition is missing")
 	}
 
-	tableName, _ := model.NewMapping().GetSQLTableName(table, true)
+	tableName, aliasTableName := model.NewMapping().GetSQLTableName(table, false)
 
 	tempWhere := where.(*Where)
 	setStr := ""
@@ -272,13 +272,16 @@ func (q *Query) UpdateBy(table interface{}, setParams []interface{}, where drive
 		if paramType == "string" {
 			setStr += setParams[i].(string) + ","
 		} else if paramType == "common.Condition" {
-			sql, params := getCondition(setParams[i].(common.Condition), tempWhere.Params)
+			condition := setParams[i].(common.Condition)
+			condition.AliasTableName = ""
+			sql, params := getCondition(condition, tempWhere.Params)
 			tempWhere.Params = params
 			setStr += sql + ","
 		}
 	}
 	setStr = strings.Trim(setStr, ",")
 	sql := fmt.Sprintf("UPDATE %s SET %s WHERE %s", tableName, setStr, tempWhere.SQL)
+	sql = strings.Replace(sql, " "+aliasTableName+".", " ", -1)
 	affected, _, err = NewNativeQuery(q.DatabaseConfigKey, q.TransactionKey).Execute(sql, tempWhere.Params)
 	return affected, err
 }
@@ -316,10 +319,11 @@ func (q *Query) DeleteBy(table interface{}, where drivers.IWhere) (affected int,
 		common.NewError().Throw("where condition is missing")
 	}
 
-	tableName, aliasTableName := model.NewMapping().GetSQLTableName(table, true)
+	tableName, aliasTableName := model.NewMapping().GetSQLTableName(table, false)
 
 	tempWhere := where.(*Where)
-	sql := fmt.Sprintf("DELETE %s FROM %s WHERE %s", aliasTableName, tableName, tempWhere.SQL)
+	sql := fmt.Sprintf("DELETE FROM %s WHERE %s", tableName, tempWhere.SQL)
+	sql = strings.Replace(sql, " "+aliasTableName+".", " ", -1)
 	affected, _, err = NewNativeQuery(q.DatabaseConfigKey, q.TransactionKey).Execute(sql, tempWhere.Params)
 	return affected, err
 }
@@ -383,11 +387,11 @@ func (q *Query) getSelectSQL(table interface{}, args ...interface{}) (string, ma
 			continue
 		}
 		argType := reflect.TypeOf(arg).String()
-		if argType == "*mysql.Where" {
+		if argType == "*sqlite.Where" {
 			where := arg.(*Where)
 			whereSQL = where.SQL
 			params = where.Params
-		} else if argType == "*mysql.OrderBy" {
+		} else if argType == "*sqlite.OrderBy" {
 			order := arg.(*OrderBy)
 			orderSQL += "," + order.SQL
 		}

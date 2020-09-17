@@ -1,4 +1,4 @@
-package mysql
+package tests
 
 import (
 	"strconv"
@@ -104,6 +104,7 @@ func TestCUD(t *testing.T) {
 		}
 		affected, err := db.UpdateBy(table, params, where)
 		if err != nil {
+			// panic(err)
 			t.Errorf("UpdateBy error")
 		}
 		if affected <= 0 {

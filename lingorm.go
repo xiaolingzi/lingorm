@@ -6,6 +6,7 @@ import (
 	"github.com/xiaolingzi/lingorm/internal/config"
 	"github.com/xiaolingzi/lingorm/internal/drivers"
 	"github.com/xiaolingzi/lingorm/internal/drivers/mysql"
+	"github.com/xiaolingzi/lingorm/internal/drivers/sqlite"
 )
 
 // IQuery query interface
@@ -48,6 +49,8 @@ func DB(databaseConfigKey string) IQuery {
 	driver := strings.ToLower(config.GetDatabaseDriver(databaseConfigKey))
 	if driver == "msyql" {
 		return mysql.NewQuery(databaseConfigKey)
+	} else if driver == "sqlite" || driver == "sqlite3" {
+		return sqlite.NewQuery(databaseConfigKey)
 	}
 	return mysql.NewQuery(databaseConfigKey)
 }
