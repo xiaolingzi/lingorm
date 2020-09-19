@@ -39,6 +39,9 @@ func (m *Native) connect() {
 		if databaseInfo.Salt != "" {
 			dsn += "&_auth_salt=" + databaseInfo.Salt
 		}
+		if databaseInfo.Timeout > 0 {
+			dsn += "&_timeout=" + strconv.Itoa(databaseInfo.Timeout)
+		}
 	}
 	var err error
 	if db == nil {

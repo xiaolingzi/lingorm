@@ -17,6 +17,7 @@ type Config struct {
 	Password string
 	Crypt    string
 	Salt     string
+	Timeout  int
 }
 
 func NewConfig() *Config {
